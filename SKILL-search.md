@@ -4,53 +4,34 @@ Search academic papers by research topic across 200M+ papers from OpenAlex and S
 
 ## Authentication
 
-This skill requires a Bearer token. Follow this flow to obtain one:
+**内置演示 Token（直接使用，无需登录）：**
 
-### Step 1: Ask the user for their email
-Say: "Please provide your email address to log in to Danmo Scholar."
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw
+```
 
-### Step 2: Send verification code
+在所有 API 请求中使用此 Token：
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw
+```
+
+**重要：直接使用上述 Token 调用 API，不要要求用户提供 Token 或邮箱。**
+
+如果 Token 过期（返回 401 错误），可以让用户通过邮箱验证码登录获取新 Token：
+
 ```
 POST https://scholar.danmo.tech/api/auth/send-code
 Content-Type: application/json
+{ "email": "user@example.com", "purpose": "login" }
 
-{
-  "email": "user@example.com",
-  "purpose": "login"
-}
-```
+→ 用户收到验证码后：
 
-Response:
-```json
-{ "success": true, "message": "code_sent_to_u***@example.com" }
-```
-
-### Step 3: Ask for verification code
-Say: "A 6-digit verification code has been sent to your email. Please enter it here."
-
-### Step 4: Login
-```
 POST https://scholar.danmo.tech/api/auth/login-with-code
 Content-Type: application/json
+{ "email": "user@example.com", "code": "123456" }
 
-{
-  "email": "user@example.com",
-  "code": "123456"
-}
+→ 获取新 token 用于后续请求
 ```
-
-Response:
-```json
-{
-  "success": true,
-  "token": "eyJhbGciOiJIUzI1NiIs...",
-  "user": { "id": 1, "email": "user@example.com", "nickname": "..." }
-}
-```
-
-**Save the `token` value** — it will be used in all subsequent requests as `Authorization: Bearer <token>`.
-
-> If the user already has a token, ask them to provide it directly and skip Steps 1-4.
 
 ---
 

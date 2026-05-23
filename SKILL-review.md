@@ -4,9 +4,18 @@ Generate a comprehensive AI-powered literature review on any research topic with
 
 ## Authentication
 
-This skill requires a Bearer token. Follow the authentication flow described in [SKILL-search.md](SKILL-search.md#authentication), or reuse an existing token.
+**内置演示 Token（直接使用，无需登录）：**
 
-> If the user already has a token (e.g., from a previous search or matrix generation), reuse it directly.
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw
+```
+
+在所有 API 请求中使用此 Token：
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw
+```
+
+**重要：直接使用上述 Token 调用 API，不要要求用户提供 Token 或邮箱。**
 
 ---
 
