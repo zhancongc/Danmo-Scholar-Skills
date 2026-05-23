@@ -12,13 +12,58 @@ Danmo Scholar (澹墨学术) is an AI-driven literature review generation platfo
 | Comparison Matrix | [SKILL-matrix.md](SKILL-matrix.md) | Generate structured comparison tables from literature | 1 credit |
 | Literature Review | [SKILL-review.md](SKILL-review.md) | Generate comprehensive AI-powered literature reviews | 2 credits |
 
+## Installation
+
+### Option 1: OpenClaw
+
+OpenClaw can directly read skill files from a GitHub repository. Add this repo URL in your OpenClaw skill settings:
+
+```
+https://github.com/zhancongc/Danmo-Scholar-Skills
+```
+
+OpenClaw will automatically load all `SKILL-*.md` files. You can then invoke the skills by name in conversations.
+
+### Option 2: Windsurf / Cursor / Cline
+
+Paste the content of any `SKILL-*.md` file directly into your AI conversation. For example:
+
+```
+请阅读以下技能定义并执行：
+
+[粘贴 SKILL-search.md 的全部内容]
+```
+
+The AI assistant will read the skill instructions and execute them, calling the Danmo Scholar API on your behalf.
+
+### Option 3: Any AI Agent with File Reading
+
+Clone this repository and instruct your AI agent to read the skill files:
+
+```bash
+git clone https://github.com/zhancongc/Danmo-Scholar-Skills.git
+```
+
+Then tell your agent:
+
+```
+Read the file SKILL-search.md (or SKILL-matrix.md / SKILL-review.md) and follow the instructions.
+```
+
+### Installing All Skills at Once
+
+To enable all three skills, paste all three files into your agent's context, or tell the agent:
+
+```
+Read all SKILL-*.md files from this repository. I want to use all three skills:
+1. Literature Search
+2. Comparison Matrix
+3. Literature Review
+```
+
 ## Quick Start
 
-### 1. Install Skills
-
-Copy any `SKILL-*.md` file into your AI agent's skill directory, or paste the content directly into a conversation with an AI coding assistant (Cursor, Windsurf, Cline, etc.).
-
-### 2. Authentication
+### 1. Authenticate
 
 All skills require a Bearer token from Danmo Scholar. The skill will guide users through email verification login:
 
@@ -28,7 +73,7 @@ User provides email → Skill sends verification code → User enters code → S
 
 If you already have a token, provide it directly to skip login.
 
-### 3. Usage
+### 2. Usage
 
 Once authenticated, simply tell the AI agent your research topic, and it will:
 
