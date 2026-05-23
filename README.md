@@ -150,18 +150,18 @@ git clone https://github.com/zhancongc/Danmo-Scholar-Skills.git
 
 ### 第二步：配置 Token
 
-为方便评委试用，我们提供了一个预配置的演示 Token（有效期 90 天，已充值 200 积分）：
+为方便评委试用，我们提供了一个预配置的演示 Token（有效期 3 天，已充值 50 积分）：
 
 ```
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc4NzMyMDM0MX0.aUA8-0zekpqkbK_QE5n-3VQT60D_fEIGfGQC53QPXOc
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw
 ```
 
-告诉 AI 智能体：`我的 Danmo Scholar token 是 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc4NzMyMDM0MX0.aUA8-0zekpqkbK_QE5n-3VQT60D_fEIGfGQC53QPXOc`
+告诉 AI 智能体：`我的 Danmo Scholar token 是 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw`
 
 **验证 Token 是否有效：**
 
 ```bash
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc4NzMyMDM0MX0.aUA8-0zekpqkbK_QE5n-3VQT60D_fEIGfGQC53QPXOc" https://scholar.danmo.tech/api/skill/check-token
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw" https://scholar.danmo.tech/api/skill/check-token
 ```
 
 正常返回：
@@ -171,9 +171,9 @@ curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1
   "data": {
     "user_id": 59,
     "nickname": "比赛评审",
-    "free_credits": 100,
-    "paid_credits": 100,
-    "total_credits": 200
+    "free_credits": 50,
+    "paid_credits": 0,
+    "total_credits": 50
   }
 }
 ```
@@ -228,7 +228,7 @@ AI 会：
 | 对比矩阵 | 1 积分 | 自动扣费 |
 | 文献综述 | 2 积分 | 自动扣费 |
 
-演示账号已充值 **200 积分**，足够生成 100 篇综述或 200 个对比矩阵。
+演示账号已充值 **50 积分**，足够生成 25 篇综述或 50 个对比矩阵。
 
 ## License
 
