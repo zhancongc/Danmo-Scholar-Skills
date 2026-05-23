@@ -1,0 +1,164 @@
+# Skill: AI Literature Review Generation
+
+Generate a comprehensive AI-powered literature review on any research topic with proper citations.
+
+## Authentication
+
+This skill requires a Bearer token. Follow the authentication flow described in [SKILL-search.md](SKILL-search.md#authentication), or reuse an existing token.
+
+> If the user already has a token (e.g., from a previous search or matrix generation), reuse it directly.
+
+---
+
+## Skill: Generate Literature Review
+
+### When to use
+When the user wants a comprehensive literature review on a research topic, with proper academic citations.
+
+### Instructions
+
+1. Ask the user for their research topic (required). Optional parameters:
+   - `target_count`: Number of papers to include (default: 50, range: 10-100)
+   - `recent_years_ratio`: Ratio of papers from the last 5 years (default: 0.5, range: 0.1-1.0)
+   - `search_years`: How many years back to search (default: 10, range: 5-30)
+   - `language`: Output language — `zh` (Chinese, default) or `en` (English)
+
+2. Submit the review generation task:
+
+```
+POST https://scholar.danmo.tech/api/smart-generate
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "topic": "photocatalytic water splitting for hydrogen production",
+  "language": "zh",
+  "target_count": 50,
+  "recent_years_ratio": 0.5,
+  "search_years": 10
+}
+```
+
+If the user previously completed a paper search, set `reuse_task_id` to reuse those results without re-searching.
+
+3. Response (immediate):
+```json
+{
+  "success": true,
+  "message": "task_submitted",
+  "data": {
+    "task_id": "a1b2c3d4"
+  }
+}
+```
+
+4. **Poll for results** — Review generation is a 3-stage, 8-step process that takes 3-8 minutes. Poll every 10 seconds:
+
+```
+GET https://scholar.danmo.tech/api/tasks/{task_id}
+Authorization: Bearer <token>
+```
+
+5. Polling responses:
+
+**In progress (show stage to user):**
+```json
+{
+  "success": true,
+  "data": {
+    "task_id": "a1b2c3d4",
+    "status": "processing",
+    "current_stage": "searching_papers",
+    "topic": "photocatalytic water splitting",
+    "progress": {
+      "stage": "searching_papers",
+      "step": 2,
+      "total_steps": 8,
+      "message": "Searching OpenAlex database..."
+    }
+  }
+}
+```
+
+**Stages:**
+| Stage | Steps | Description |
+|-------|-------|-------------|
+| Paper Search | 1-3 | AI agent searches OpenAlex + Semantic Scholar |
+| Review Generation | 4-7 | Generates structured review with citations |
+| Citation Validation | 8 | Validates and fixes citation formatting |
+
+**Completed:**
+```json
+{
+  "success": true,
+  "data": {
+    "task_id": "a1b2c3d4",
+    "status": "completed",
+    "topic": "photocatalytic water splitting",
+    "result": {
+      "review": "# Literature Review\n\n## Abstract\n...\n\n## 1. Introduction\n...\n\n## References\n[1] Author, Title...",
+      "papers": [...],
+      "statistics": {
+        "total_papers": 50,
+        "categories": ["Chemistry", "Materials Science"],
+        "year_range": [2015, 2025],
+        "avg_citations": 23.4
+      }
+    }
+  }
+}
+```
+
+6. Present the review to the user:
+   - Show the full review content (markdown formatted)
+   - Highlight key statistics (total papers, research categories, year range)
+   - Note the reference count and citation format
+
+7. Optional: Offer to change citation format by re-fetching:
+   ```
+   GET https://scholar.danmo.tech/api/tasks/{task_id}/review?format=apa
+   ```
+   Supported formats: `ieee`, `apa`, `mla`, `gb_t_7714`
+
+### Polling Logic
+
+```
+Submit task → Get task_id
+Loop every 10 seconds:
+  GET /api/tasks/{task_id}
+  If status == "completed" → Show full review, stop polling
+  If status == "failed" → Show error, stop polling
+  If status == "processing" → Show current stage/step, continue polling
+  After 10 minutes → Timeout, inform user
+```
+
+### Error Handling
+
+| Status | Detail | Action |
+|--------|--------|--------|
+| 401 | `login_required` | Re-authenticate |
+| 400 | `credit_insufficient` | Insufficient credits. Tell user about pricing. |
+| 400 | `daily_free_limit_reached` | Free daily limit reached. Suggest purchasing credits. |
+| 404 | Task not found | Task may have expired. Submit a new one. |
+
+### Cost
+- 2 credits per generation (users with credits are auto-deducted)
+- Free tier: limited daily free quota (generates preview, full text requires credits)
+
+### Typical Duration
+- 3-8 minutes depending on paper count and topic complexity
+
+### Output Structure
+
+The generated review includes:
+1. **Abstract** — Summary of the review
+2. **Keywords** — Research domain keywords
+3. **Main Body** — Structured sections (Introduction, Methodology, Findings, Discussion)
+4. **Research Outlook** — Future research directions
+5. **References** — Properly formatted citations (IEEE by default)
+
+### Examples
+
+**User**: "Generate a literature review on large language models for code generation"
+
+**AI**: Submits review task, provides progress updates during the 8-step process, then presents the complete review with 50+ referenced papers covering architectures, training methods, evaluation benchmarks, and future directions.
