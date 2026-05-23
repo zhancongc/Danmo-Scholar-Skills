@@ -1,6 +1,6 @@
 # Skill: AI Literature Review Generation
 
-- Version: 1.2.0
+- Version: 1.3.0
 - Author: zhancongc@icloud.com
 - Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
 
@@ -110,32 +110,18 @@ If the user previously completed a paper search, set `reuse_task_id` to reuse th
 }
 ```
 
-4. **Poll for results** — Review generation is a 3-stage, 8-step process that takes 3-8 minutes. Poll every 10 seconds:
+4. **Stream progress via SSE** — 实时获取任务进展，无需轮询。综述生成是 3 阶段 8 步流程，耗时 3-8 分钟：
 
+```bash
+curl -N -H "Authorization: Bearer <token>" \
+  https://scholar.danmo.tech/api/tasks/{task_id}/stream
 ```
-GET https://scholar.danmo.tech/api/tasks/{task_id}
-Authorization: Bearer <token>
+
+SSE 事件格式（每个 `data:` 行是一个 JSON 事件）：
+
+**进度更新：**
 ```
-
-5. Polling responses:
-
-**In progress (show stage to user):**
-```json
-{
-  "success": true,
-  "data": {
-    "task_id": "a1b2c3d4",
-    "status": "processing",
-    "current_stage": "searching_papers",
-    "topic": "photocatalytic water splitting",
-    "progress": {
-      "stage": "searching_papers",
-      "step": 2,
-      "total_steps": 8,
-      "message": "Searching OpenAlex database..."
-    }
-  }
-}
+data: {"task_id":"a1b2c3d4","status":"processing","progress":{"stage":"searching_papers","step":2,"message":"Searching OpenAlex..."}}
 ```
 
 **Stages:**
@@ -145,27 +131,23 @@ Authorization: Bearer <token>
 | Review Generation | 4-7 | Generates structured review with citations |
 | Citation Validation | 8 | Validates and fixes citation formatting |
 
-**Completed:**
-```json
-{
-  "success": true,
-  "data": {
-    "task_id": "a1b2c3d4",
-    "status": "completed",
-    "topic": "photocatalytic water splitting",
-    "result": {
-      "review": "# Literature Review\n\n## Abstract\n...\n\n## 1. Introduction\n...\n\n## References\n[1] Author, Title...",
-      "papers": [...],
-      "statistics": {
-        "total_papers": 50,
-        "categories": ["Chemistry", "Materials Science"],
-        "year_range": [2015, 2025],
-        "avg_citations": 23.4
-      }
-    }
-  }
-}
+**完成：**
 ```
+data: {"task_id":"a1b2c3d4","status":"completed","progress":{...},"result":{"review":"...","papers":[...],"statistics":{...}}}
+```
+
+**失败：**
+```
+data: {"task_id":"a1b2c3d4","status":"failed","error":"error message"}
+```
+
+**重要：每收到一个进度事件，立即在终端向用户展示当前阶段和步骤。不要等到完成才输出。例如：**
+- `[1/8] 正在搜索文献...`
+- `[2/8] 正在扩展搜索关键词...`
+- `[4/8] 正在生成综述正文...`
+- `[8/8] 正在校验引用格式...`
+
+5. 任务完成后，通过 `GET /api/tasks/{task_id}/review` 获取完整的综述数据用于展示。
 
 6. Present the review to the user **在终端完整输出**：
    - **完整输出综述全文**（不要省略任何章节、段落或参考文献）
@@ -178,16 +160,16 @@ Authorization: Bearer <token>
    ```
    Supported formats: `ieee`, `apa`, `mla`, `gb_t_7714`
 
-### Polling Logic
+### Stream Logic
 
 ```
 Submit task → Get task_id
-Loop every 10 seconds:
-  GET /api/tasks/{task_id}
-  If status == "completed" → Show full review, stop polling
-  If status == "failed" → Show error, stop polling
-  If status == "processing" → Show current stage/step, continue polling
-  After 10 minutes → Timeout, inform user
+Open SSE stream: GET /api/tasks/{task_id}/stream
+On each event:
+  Show progress message to user in real-time (stage, step)
+  If status == "completed" → Fetch full result, stop stream
+  If status == "failed" → Show error, stop stream
+After 10 minutes without completion → Timeout, inform user
 ```
 
 ### Error Handling

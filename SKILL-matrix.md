@@ -1,6 +1,6 @@
 # Skill: Literature Comparison Matrix
 
-- Version: 1.2.0
+- Version: 1.3.0
 - Author: zhancongc@icloud.com
 - Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
 
@@ -106,45 +106,33 @@ Authorization: Bearer <token>
 }
 ```
 
-4. **Poll for results** — The matrix generation is asynchronous. Poll every 5 seconds:
+4. **Stream progress via SSE** — 实时获取任务进展，无需轮询：
 
-```
-GET https://scholar.danmo.tech/api/comparison-matrix/{task_id}
-Authorization: Bearer <token>
-```
-
-5. Polling responses:
-
-**In progress:**
-```json
-{
-  "success": true,
-  "data": {
-    "task_id": "a1b2c3d4",
-    "status": "processing",
-    "current_stage": "generating_comparison_matrix",
-    "topic": "photocatalytic water splitting"
-  }
-}
+```bash
+curl -N -H "Authorization: Bearer <token>" \
+  https://scholar.danmo.tech/api/tasks/{task_id}/stream
 ```
 
-**Completed:**
-```json
-{
-  "success": true,
-  "data": {
-    "task_id": "a1b2c3d4",
-    "status": "completed",
-    "topic": "photocatalytic water splitting",
-    "comparison_matrix": "# Comparison Matrix\n\n| Dimension | Paper 1 | Paper 2 | ... |",
-    "papers": [...],
-    "statistics": {
-      "total_papers": 20,
-      "categories": ["Materials Science", "Chemistry"]
-    }
-  }
-}
+SSE 事件格式（每个 `data:` 行是一个 JSON 事件）：
+
+**进度更新：**
 ```
+data: {"task_id":"a1b2c3d4","status":"processing","progress":{"stage":"searching_papers","step":1,"message":"Searching OpenAlex..."}}
+```
+
+**完成：**
+```
+data: {"task_id":"a1b2c3d4","status":"completed","progress":{...},"result":{"comparison_matrix":"...","papers":[...],"statistics":{...}}}
+```
+
+**失败：**
+```
+data: {"task_id":"a1b2c3d4","status":"failed","error":"error message"}
+```
+
+**重要：每收到一个进度事件，立即在终端向用户展示当前进展（搜索文献、生成矩阵等）。不要等到完成才输出。**
+
+5. 任务完成后，通过 `GET /api/comparison-matrix/{task_id}` 获取完整的对比矩阵数据用于展示。
 
 6. Present the comparison matrix to the user **在终端完整输出**：
    - **完整渲染对比矩阵表格**（不要省略任何行列）
@@ -153,16 +141,16 @@ Authorization: Bearer <token>
 
 7. Suggest next step: "Would you like me to generate a comprehensive literature review on this topic?"
 
-### Polling Logic
+### Stream Logic
 
 ```
 Submit task → Get task_id
-Loop every 5 seconds:
-  GET /api/comparison-matrix/{task_id}
-  If status == "completed" → Show result, stop polling
-  If status == "failed" → Show error, stop polling
-  If status == "processing" → Continue polling
-  After 5 minutes → Timeout, inform user
+Open SSE stream: GET /api/tasks/{task_id}/stream
+On each event:
+  Show progress message to user in real-time
+  If status == "completed" → Fetch full result, stop stream
+  If status == "failed" → Show error, stop stream
+After 10 minutes without completion → Timeout, inform user
 ```
 
 ### Error Handling

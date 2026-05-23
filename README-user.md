@@ -106,6 +106,7 @@ All heavy computation (paper search, AI generation, citation validation) runs on
 | `/api/comparison-matrix/{task_id}` | GET | Bearer | Poll comparison matrix result |
 | `/api/smart-generate` | POST | Bearer | Submit literature review task |
 | `/api/tasks/{task_id}` | GET | Bearer | Poll task status and result |
+| `/api/tasks/{task_id}/stream` | GET | SSE | Stream real-time task progress (SSE) |
 
 **Base URL**: `https://scholar.danmo.tech`
 

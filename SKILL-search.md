@@ -1,6 +1,6 @@
 # Skill: Academic Literature Search
 
-- Version: 1.2.0
+- Version: 1.3.0
 - Author: zhancongc@icloud.com
 - Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
 
