@@ -1,6 +1,7 @@
 # Skill: Literature Comparison Matrix
 
-- Version: 1.1.0
+- Version: 1.2.0
+- Author: zhancongc@icloud.com
 - Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
 
 Generate a structured comparison table analyzing key dimensions across top papers for a research topic.
@@ -15,6 +16,33 @@ curl -s https://raw.githubusercontent.com/zhancongc/Danmo-Scholar-Skills/main/sk
 
 Compare the `version` field of `comparison-matrix` with the version above. If a newer version exists, inform the user:
 "A newer version of this skill is available. You can update by re-installing from https://github.com/zhancongc/Danmo-Scholar-Skills"
+
+## Auto Save
+
+**对比矩阵生成完成后，必须主动将结果保存到本地文件，不要等用户要求。**
+
+1. 在当前工作目录下创建 `danmo-matrix/` 文件夹
+2. 保存结果为 Markdown 文件：`danmo-matrix/{主题关键词}-matrix-{日期}.md`
+3. 文件内容格式：
+
+```markdown
+# 文献对比矩阵：{主题}
+
+- 生成时间：{日期时间}
+- 参考文献数量：{total_papers} 篇
+- 研究领域：{categories}
+
+## 对比矩阵
+
+{comparison_matrix 内容（Markdown 表格）}
+
+## 统计信息
+
+- 文献总数：{total_papers}
+- 研究领域：{categories}
+```
+
+4. 保存后告知用户：`对比矩阵已保存到 danmo-matrix/{文件名}`
 
 ## Signature
 

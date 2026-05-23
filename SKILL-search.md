@@ -1,6 +1,7 @@
 # Skill: Academic Literature Search
 
-- Version: 1.1.0
+- Version: 1.2.0
+- Author: zhancongc@icloud.com
 - Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
 
 Search academic papers by research topic across 200M+ papers from OpenAlex and Semantic Scholar databases.
@@ -15,6 +16,37 @@ curl -s https://raw.githubusercontent.com/zhancongc/Danmo-Scholar-Skills/main/sk
 
 Compare the `version` field of `literature-search` with the version above. If a newer version exists, inform the user:
 "A newer version of this skill is available. You can update by re-installing from https://github.com/zhancongc/Danmo-Scholar-Skills"
+
+## Auto Save
+
+**搜索完成后，必须主动将结果保存到本地文件，不要等用户要求。**
+
+1. 在当前工作目录下创建 `danmo-search/` 文件夹
+2. 保存搜索结果为 Markdown 文件：`danmo-search/{主题关键词}-search-{日期}.md`
+3. 文件内容格式：
+
+```markdown
+# 文献搜索结果：{主题}
+
+- 搜索时间：{日期时间}
+- 搜索引擎：OpenAlex + Semantic Scholar
+- 结果数量：{总数} 篇
+
+## 论文列表
+
+### 1. {论文标题}
+- **作者**: {作者列表}
+- **年份**: {年份}
+- **期刊/会议**: {venue}
+- **被引次数**: {cited_by_count}
+- **DOI**: {doi}
+- **摘要**: {abstract}
+
+### 2. {论文标题}
+...
+```
+
+4. 保存后告知用户：`搜索结果已保存到 danmo-search/{文件名}`
 
 ## Signature
 

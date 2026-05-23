@@ -1,6 +1,7 @@
 # Skill: AI Literature Review Generation
 
-- Version: 1.1.0
+- Version: 1.2.0
+- Author: zhancongc@icloud.com
 - Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
 
 Generate a comprehensive AI-powered literature review on any research topic with proper citations.
@@ -15,6 +16,33 @@ curl -s https://raw.githubusercontent.com/zhancongc/Danmo-Scholar-Skills/main/sk
 
 Compare the `version` field of `literature-review` with the version above. If a newer version exists, inform the user:
 "A newer version of this skill is available. You can update by re-installing from https://github.com/zhancongc/Danmo-Scholar-Skills"
+
+## Auto Save
+
+**综述生成完成后，必须主动将结果保存到本地文件，不要等用户要求。**
+
+1. 在当前工作目录下创建 `danmo-review/` 文件夹
+2. 保存综述正文为 Markdown 文件：`danmo-review/{主题关键词}-review-{日期}.md`
+3. 文件内容格式：
+
+```markdown
+# {主题} — 文献综述
+
+- 生成时间：{日期时间}
+- 参考文献数量：{total_papers} 篇
+- 年份范围：{year_range}
+- 引用格式：IEEE
+
+---
+
+{review 全文内容}
+
+## 参考文献列表
+
+{papers 列表，包含标题、作者、年份、DOI}
+```
+
+4. 保存后告知用户：`文献综述已保存到 danmo-review/{文件名}`
 
 ## Signature
 
