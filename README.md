@@ -18,12 +18,10 @@ AI 驱动的学术文献研究技能包，可安装到 OpenClaw、Cursor、Winds
 
 ### 第一步：安装技能
 
-**方式 A — OpenClaw：**
+**方式 A — OpenClaw、Hermes：**
 
-将仓库地址添加到技能配置：
-```
-https://github.com/zhancongc/Danmo-Scholar-Skills
-```
+直接输入：“请帮我安装技能: https://github.com/zhancongc/Danmo-Scholar-Skills”
+
 
 **方式 B — Cursor / Windsurf / Cline：**
 
@@ -101,8 +99,7 @@ curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1
                                                          ↓
                                                  scholar.danmo.tech
                                                          ↓
-                                             OpenAlex + Semantic Scholar
-                                             + DeepSeek AI Generation
+                                                   AI Generation
 ```
 
 所有计算（文献检索、AI 生成、引用校验）均在澹墨学术服务端完成，技能文件仅包含 API 调用指令。
@@ -112,3 +109,4 @@ curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1
 访问 [scholar.danmo.tech](https://scholar.danmo.tech) 体验完整 Web 版。
 
 用户安装指南详见 [README-user.md](README-user.md)。
+
