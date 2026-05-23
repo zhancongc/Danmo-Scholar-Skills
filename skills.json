@@ -1,0 +1,26 @@
+{
+  "name": "Danmo Scholar Skills",
+  "version": "1.1.0",
+  "description": "AI 学术工具平台技能包",
+  "repo": "https://github.com/zhancongc/Danmo-Scholar-Skills",
+  "skills": [
+    {
+      "name": "literature-search",
+      "file": "SKILL-search.md",
+      "version": "1.1.0",
+      "description": "学术文献搜索"
+    },
+    {
+      "name": "comparison-matrix",
+      "file": "SKILL-matrix.md",
+      "version": "1.1.0",
+      "description": "文献对比矩阵"
+    },
+    {
+      "name": "literature-review",
+      "file": "SKILL-review.md",
+      "version": "1.1.0",
+      "description": "文献综述生成"
+    }
+  ]
+}

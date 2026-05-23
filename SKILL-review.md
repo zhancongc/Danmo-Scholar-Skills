@@ -1,6 +1,20 @@
 # Skill: AI Literature Review Generation
 
+- Version: 1.1.0
+- Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
+
 Generate a comprehensive AI-powered literature review on any research topic with proper citations.
+
+## Update Check
+
+When the user first invokes this skill in a session, check if a newer version is available:
+
+```bash
+curl -s https://raw.githubusercontent.com/zhancongc/Danmo-Scholar-Skills/main/skills.json
+```
+
+Compare the `version` field of `literature-review` with the version above. If a newer version exists, inform the user:
+"A newer version of this skill is available. You can update by re-installing from https://github.com/zhancongc/Danmo-Scholar-Skills"
 
 ## Signature
 

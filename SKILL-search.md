@@ -1,6 +1,20 @@
 # Skill: Academic Literature Search
 
+- Version: 1.1.0
+- Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
+
 Search academic papers by research topic across 200M+ papers from OpenAlex and Semantic Scholar databases.
+
+## Update Check
+
+When the user first invokes this skill in a session, check if a newer version is available:
+
+```bash
+curl -s https://raw.githubusercontent.com/zhancongc/Danmo-Scholar-Skills/main/skills.json
+```
+
+Compare the `version` field of `literature-search` with the version above. If a newer version exists, inform the user:
+"A newer version of this skill is available. You can update by re-installing from https://github.com/zhancongc/Danmo-Scholar-Skills"
 
 ## Signature
 
