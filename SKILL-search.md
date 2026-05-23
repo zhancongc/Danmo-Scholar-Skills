@@ -142,10 +142,11 @@ Authorization: Bearer <token>
 }
 ```
 
-5. Present the results to the user:
+5. Present the results to the user **在终端输出**：
    - Show total papers found
-   - List top papers with title, authors, year, citations, and venue
-   - Highlight highly cited papers
+   - **输出前 10 篇论文的详细信息**（标题、作者、年份、被引次数、期刊、摘要前 200 字）
+   - 其余论文仅输出标题和年份（一行一篇）
+   - Highlight highly cited papers (cited_by_count > 100)
 
 6. After showing results, suggest next steps:
    - "Would you like me to generate a comparison matrix for these papers?"

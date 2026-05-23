@@ -167,8 +167,8 @@ Authorization: Bearer <token>
 }
 ```
 
-6. Present the review to the user:
-   - Show the full review content (markdown formatted)
+6. Present the review to the user **在终端完整输出**：
+   - **完整输出综述全文**（不要省略任何章节、段落或参考文献）
    - Highlight key statistics (total papers, research categories, year range)
    - Note the reference count and citation format
 

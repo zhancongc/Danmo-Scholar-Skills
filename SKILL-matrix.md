@@ -146,8 +146,8 @@ Authorization: Bearer <token>
 }
 ```
 
-6. Present the comparison matrix to the user:
-   - Render the markdown table
+6. Present the comparison matrix to the user **在终端完整输出**：
+   - **完整渲染对比矩阵表格**（不要省略任何行列）
    - Summarize key findings
    - Show statistics (total papers, research categories)
 
