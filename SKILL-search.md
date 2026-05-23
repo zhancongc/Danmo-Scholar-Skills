@@ -126,7 +126,7 @@ Authorization: Bearer <token>
 | 500 | Server error | Retry once, then inform user |
 
 ### Cost
-- Free tier: 30 searches per day
+- Free tier: 5 searches per day
 - Can exchange credits for additional searches (1 credit = 30 searches)
 
 ### Examples

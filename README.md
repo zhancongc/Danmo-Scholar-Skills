@@ -67,7 +67,7 @@ All heavy computation (paper search, AI generation, citation validation) runs on
 
 - New users get free daily quota for searching and limited free generations
 - Paid credits: CNY 9.9 / 19.8 / 49.8 (Chinese) or USD 9.99 / 24.99 / 49.99 (International)
-- Literature search: free daily quota (30 searches/day)
+- Literature search: free daily quota (5 searches/day)
 - Comparison matrix: 1 credit per generation
 - Literature review: 2 credits per generation
 
