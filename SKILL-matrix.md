@@ -1,6 +1,6 @@
 # Skill: Literature Comparison Matrix
 
-- Version: 1.4.0
+- Version: 2.0.0
 - Author: zhancongc@icloud.com
 - Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
 
@@ -16,6 +16,19 @@ curl -s https://raw.githubusercontent.com/zhancongc/Danmo-Scholar-Skills/main/sk
 
 Compare the `version` field of `comparison-matrix` with the version above. If a newer version exists, inform the user:
 "A newer version of this skill is available. You can update by re-installing from https://github.com/zhancongc/Danmo-Scholar-Skills"
+
+## Output Rules
+
+**CRITICAL — 必须严格遵守以下输出规范：**
+
+1. **禁止向用户展示**：curl 命令、HTTP 请求、API URL、JSON 响应、Token、状态码、技术日志、Python/bash 脚本、代码块
+2. **应该向用户展示**：友好的中文进度提示、对比矩阵表格、统计信息、最终结果
+3. **内部调用 API 时**：使用你的代码执行工具（如 `execute_code` / `terminal`）静默发送请求，不要把请求细节输出到聊天
+4. **进度展示**：用自然语言描述当前阶段，例如：
+   - "🔍 正在搜索学术文献..."
+   - "📊 正在生成对比矩阵..."
+   - "✅ 对比矩阵生成完成！"
+5. **轮询进度时**：在后台静默轮询，只在阶段变化时向用户输出一句友好的进度更新。不要输出轮询次数、等待秒数等技术信息
 
 ## Auto Save
 
@@ -53,18 +66,15 @@ Compare the `version` field of `comparison-matrix` with the version above. If a 
 
 ## Authentication
 
-**内置演示 Token（直接使用，无需登录）：**
+<!-- INTERNAL: 以下信息仅供 AI 内部调用使用，不要向用户展示 -->
+
+内置演示 Token：
 
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw
 ```
 
-在所有 API 请求中使用此 Token：
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw
-```
-
-**重要：直接使用上述 Token 调用 API，不要要求用户提供 Token 或邮箱。**
+直接使用此 Token 调用 API，不要要求用户提供 Token 或邮箱。
 
 ---
 
@@ -79,86 +89,72 @@ When the user wants to compare academic papers on a topic in a structured table 
    - Language: `zh` (Chinese, default) or `en` (English)
    - If they previously searched papers, ask if they want to reuse those results
 
-2. Submit the comparison matrix task:
+2. **在后台提交任务**（不要向用户展示 API 细节）：
 
-```
-POST https://scholar.danmo.tech/api/generate-comparison-matrix
-Content-Type: application/json
-Authorization: Bearer <token>
-
+使用代码执行工具发送 POST 请求到 `https://scholar.danmo.tech/api/generate-comparison-matrix`，包含 Authorization header 和 JSON body：
+```json
 {
-  "topic": "photocatalytic water splitting",
+  "topic": "用户的研究主题",
   "language": "zh",
   "reuse_task_id": ""
 }
 ```
 
-- If the user previously completed a search, set `reuse_task_id` to the search task ID to skip re-searching.
+- If the user previously completed a search, add `"reuse_task_id": "之前的 search task_id"` to skip re-searching.
 
-3. Response (immediate):
-```json
-{
-  "success": true,
-  "message": "task_submitted",
-  "data": {
-    "task_id": "a1b2c3d4"
-  }
-}
-```
+从响应中提取 `task_id`。
 
-4. **用轮询方式获取任务进度**（推荐，比 SSE 更可靠）：
+3. 向用户展示：`正在为您生成关于「{主题}」的文献对比矩阵，预计需要 1-3 分钟...`
 
-```bash
-# 每隔 5 秒查询一次任务状态，直到完成或失败
-# 循环查询，最长等待 5 分钟
-TASK_ID="a1b2c3d4"
-TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw"
+4. **在后台轮询进度**（使用代码执行工具，不要展示 curl 命令）：
 
-for i in $(seq 1 60); do
-  STATUS=$(curl -s -H "Authorization: Bearer $TOKEN" \
-    "https://scholar.danmo.tech/api/tasks/$TASK_ID")
-  echo "$STATUS"
-  
-  # 检查是否完成或失败
-  if echo "$STATUS" | grep -q '"completed\|"failed'; then
-    break
-  fi
-  
-  sleep 5
-done
-```
+每隔 5 秒发送 GET 请求到 `https://scholar.danmo.tech/api/tasks/{task_id}`（带 Authorization header）。
 
-每次查询返回的 JSON 中：
-- `status` 字段：`pending` / `processing` / `completed` / `failed`
-- `progress.step`：当前阶段（`searching` / `generating_matrix` / `streaming_matrix`）
-- `progress.message`：当前进度的中文描述
-- `progress.stream_text`：**实时流式生成的矩阵内容**（逐步增长，每条消息都是完整累积文本）
-- `result`：最终结果（仅 status=completed 时存在）
+响应 JSON 结构（供你内部解析，不要原样展示）：
+- `status`: `pending` / `processing` / `completed` / `failed`
+- `progress.step`: 当前阶段
+- `progress.message`: 进度描述
+- `progress.stream_text`: 流式生成的矩阵内容（逐步增长）
+- `result`: 最终结果（仅 completed 时存在）
 
-**重要：**
-- 每次查询到 progress 变化时，**立即**向用户展示当前进度消息
-- 如果 `progress.stream_text` 有内容，向用户实时展示正在生成的矩阵预览
-- 不要等到完成才输出进度
+**当阶段变化时，向用户输出一句友好的提示：**
 
-5. 任务完成后，通过 `GET /api/comparison-matrix/{task_id}` 获取完整的对比矩阵数据用于展示。
+| progress.step | 向用户展示 |
+|--------------|-----------|
+| `searching` | 🔍 正在搜索学术文献... |
+| `papers_found` | 📚 已找到相关文献 |
+| `generating_matrix` | 📊 正在生成对比矩阵... |
+| `streaming_matrix` | 📊 正在生成对比矩阵... |
+| `completed` | ✅ 对比矩阵生成完成！ |
 
-6. Present the comparison matrix to the user **在终端完整输出**：
+如果 `progress.stream_text` 有内容，可以展示一段矩阵预览，让用户看到实时进展。
+
+最长等待 5 分钟（60 次轮询 × 5 秒）。
+
+5. **任务完成后**，发送 GET 请求到 `https://scholar.danmo.tech/api/comparison-matrix/{task_id}` 获取完整数据。
+
+6. 向用户完整展示对比矩阵：
    - **完整渲染对比矩阵表格**（不要省略任何行列）
-   - Summarize key findings
-   - Show statistics (total papers, research categories)
+   - 统计信息（文献数量、研究领域）
+   - 关键发现总结
 
-7. Suggest next step: "Would you like me to generate a comprehensive literature review on this topic?"
+7. 自动保存到本地文件（见 Auto Save 章节）
+
+8. 建议下一步："是否需要基于这些文献生成完整的文献综述？"
 
 ### Error Handling
 
-| Status | Detail | Action |
-|--------|--------|--------|
-| 401 | `login_required` | Re-authenticate |
-| 400 | `credit_insufficient` | Insufficient credits. Tell user about pricing. |
-| 404 | Task not found | Task may have expired. Submit a new one. |
+| 错误场景 | 向用户展示 |
+|---------|-----------|
+| 任务提交失败 | "提交失败，请稍后重试" |
+| 401 / Token 过期 | "服务暂时不可用，请稍后再试" |
+| 积分不足 | "当前免费额度已用完，可通过 scholar.danmo.tech 购买积分" |
+| 任务失败 | "对比矩阵生成失败，请稍后重试或换个主题试试" |
+
+**注意：不要向用户展示错误码、HTTP 状态码或技术细节。用自然语言描述问题。**
 
 ### Cost
-- 1 credit per generation (users with credits are auto-deducted)
+- 1 credit per generation
 - Free tier: limited daily free quota available
 
 ### Typical Duration
@@ -168,4 +164,10 @@ done
 
 **User**: "Compare the top papers on transformer architectures in computer vision"
 
-**AI**: Submits comparison matrix task, polls progress and shows real-time updates, presents the structured table comparing papers across dimensions like architecture, dataset, accuracy, and computational cost.
+**AI**:
+1. → (后台提交任务)
+2. → "正在为您生成关于「transformer architectures in computer vision」的文献对比矩阵，预计需要 1-3 分钟..."
+3. → "🔍 正在搜索学术文献..."
+4. → "📊 正在生成对比矩阵..."
+5. → "✅ 对比矩阵生成完成！"
+6. → (完整展示对比矩阵表格 + 保存到本地文件)
