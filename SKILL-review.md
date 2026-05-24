@@ -1,6 +1,6 @@
 # Skill: AI Literature Review Generation
 
-- Version: 1.3.0
+- Version: 1.4.0
 - Author: zhancongc@icloud.com
 - Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
 
@@ -110,19 +110,34 @@ If the user previously completed a paper search, set `reuse_task_id` to reuse th
 }
 ```
 
-4. **Stream progress via SSE** — 实时获取任务进展，无需轮询。综述生成是 3 阶段 8 步流程，耗时 3-8 分钟：
+4. **用轮询方式获取任务进度**（推荐，比 SSE 更可靠）：
+
+综述生成是 3 阶段 8 步流程，耗时 3-8 分钟。使用以下轮询方式获取进度：
 
 ```bash
-curl -N -H "Authorization: Bearer <token>" \
-  https://scholar.danmo.tech/api/tasks/{task_id}/stream
+TASK_ID="a1b2c3d4"
+TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw"
+
+for i in $(seq 1 96); do
+  STATUS=$(curl -s -H "Authorization: Bearer $TOKEN" \
+    "https://scholar.danmo.tech/api/tasks/$TASK_ID")
+  echo "$STATUS"
+  
+  # 检查是否完成或失败
+  if echo "$STATUS" | grep -q '"completed\|"failed'; then
+    break
+  fi
+  
+  sleep 5
+done
 ```
 
-SSE 事件格式（每个 `data:` 行是一个 JSON 事件）：
-
-**进度更新：**
-```
-data: {"task_id":"a1b2c3d4","status":"processing","progress":{"stage":"searching_papers","step":2,"message":"Searching OpenAlex..."}}
-```
+每次查询返回的 JSON 中：
+- `status` 字段：`pending` / `processing` / `completed` / `failed`
+- `progress.step`：当前阶段
+- `progress.message`：当前进度的中文描述
+- `progress.stream_text`：**实时流式生成的综述正文**（逐步增长）
+- `result`：最终结果（仅 status=completed 时存在）
 
 **Stages:**
 | Stage | Steps | Description |
@@ -131,21 +146,11 @@ data: {"task_id":"a1b2c3d4","status":"processing","progress":{"stage":"searching
 | Review Generation | 4-7 | Generates structured review with citations |
 | Citation Validation | 8 | Validates and fixes citation formatting |
 
-**完成：**
-```
-data: {"task_id":"a1b2c3d4","status":"completed","progress":{...},"result":{"review":"...","papers":[...],"statistics":{...}}}
-```
-
-**失败：**
-```
-data: {"task_id":"a1b2c3d4","status":"failed","error":"error message"}
-```
-
-**重要：每收到一个进度事件，立即在终端向用户展示当前阶段和步骤。不要等到完成才输出。例如：**
-- `[1/8] 正在搜索文献...`
-- `[2/8] 正在扩展搜索关键词...`
-- `[4/8] 正在生成综述正文...`
-- `[8/8] 正在校验引用格式...`
+**重要：**
+- 每次查询到 progress 变化时，**立即**向用户展示当前阶段和步骤
+- 例如：`[1/8] 正在搜索文献...`、`[4/8] 正在生成综述正文...`、`[8/8] 正在校验引用格式...`
+- 如果 `progress.stream_text` 有内容，向用户实时展示正在生成的综述预览
+- 不要等到完成才输出进度
 
 5. 任务完成后，通过 `GET /api/tasks/{task_id}/review` 获取完整的综述数据用于展示。
 
@@ -159,18 +164,6 @@ data: {"task_id":"a1b2c3d4","status":"failed","error":"error message"}
    GET https://scholar.danmo.tech/api/tasks/{task_id}/review?format=apa
    ```
    Supported formats: `ieee`, `apa`, `mla`, `gb_t_7714`
-
-### Stream Logic
-
-```
-Submit task → Get task_id
-Open SSE stream: GET /api/tasks/{task_id}/stream
-On each event:
-  Show progress message to user in real-time (stage, step)
-  If status == "completed" → Fetch full result, stop stream
-  If status == "failed" → Show error, stop stream
-After 10 minutes without completion → Timeout, inform user
-```
 
 ### Error Handling
 
@@ -201,4 +194,4 @@ The generated review includes:
 
 **User**: "Generate a literature review on large language models for code generation"
 
-**AI**: Submits review task, provides progress updates during the 8-step process, then presents the complete review with 50+ referenced papers covering architectures, training methods, evaluation benchmarks, and future directions.
+**AI**: Submits review task, polls progress and shows real-time updates during the 8-step process, then presents the complete review with 50+ referenced papers covering architectures, training methods, evaluation benchmarks, and future directions.

@@ -1,6 +1,6 @@
 # Skill: Literature Comparison Matrix
 
-- Version: 1.3.0
+- Version: 1.4.0
 - Author: zhancongc@icloud.com
 - Repo: https://github.com/zhancongc/Danmo-Scholar-Skills
 
@@ -106,31 +106,39 @@ Authorization: Bearer <token>
 }
 ```
 
-4. **Stream progress via SSE** — 实时获取任务进展，无需轮询：
+4. **用轮询方式获取任务进度**（推荐，比 SSE 更可靠）：
 
 ```bash
-curl -N -H "Authorization: Bearer <token>" \
-  https://scholar.danmo.tech/api/tasks/{task_id}/stream
+# 每隔 5 秒查询一次任务状态，直到完成或失败
+# 循环查询，最长等待 5 分钟
+TASK_ID="a1b2c3d4"
+TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OSIsImV4cCI6MTc3OTgwNDA5NH0.8L4WYYKtOCQzh99fjp1uIt_xUpLQFwN5IldNf2ZdChw"
+
+for i in $(seq 1 60); do
+  STATUS=$(curl -s -H "Authorization: Bearer $TOKEN" \
+    "https://scholar.danmo.tech/api/tasks/$TASK_ID")
+  echo "$STATUS"
+  
+  # 检查是否完成或失败
+  if echo "$STATUS" | grep -q '"completed\|"failed'; then
+    break
+  fi
+  
+  sleep 5
+done
 ```
 
-SSE 事件格式（每个 `data:` 行是一个 JSON 事件）：
+每次查询返回的 JSON 中：
+- `status` 字段：`pending` / `processing` / `completed` / `failed`
+- `progress.step`：当前阶段（`searching` / `generating_matrix` / `streaming_matrix`）
+- `progress.message`：当前进度的中文描述
+- `progress.stream_text`：**实时流式生成的矩阵内容**（逐步增长，每条消息都是完整累积文本）
+- `result`：最终结果（仅 status=completed 时存在）
 
-**进度更新：**
-```
-data: {"task_id":"a1b2c3d4","status":"processing","progress":{"stage":"searching_papers","step":1,"message":"Searching OpenAlex..."}}
-```
-
-**完成：**
-```
-data: {"task_id":"a1b2c3d4","status":"completed","progress":{...},"result":{"comparison_matrix":"...","papers":[...],"statistics":{...}}}
-```
-
-**失败：**
-```
-data: {"task_id":"a1b2c3d4","status":"failed","error":"error message"}
-```
-
-**重要：每收到一个进度事件，立即在终端向用户展示当前进展（搜索文献、生成矩阵等）。不要等到完成才输出。**
+**重要：**
+- 每次查询到 progress 变化时，**立即**向用户展示当前进度消息
+- 如果 `progress.stream_text` 有内容，向用户实时展示正在生成的矩阵预览
+- 不要等到完成才输出进度
 
 5. 任务完成后，通过 `GET /api/comparison-matrix/{task_id}` 获取完整的对比矩阵数据用于展示。
 
@@ -140,18 +148,6 @@ data: {"task_id":"a1b2c3d4","status":"failed","error":"error message"}
    - Show statistics (total papers, research categories)
 
 7. Suggest next step: "Would you like me to generate a comprehensive literature review on this topic?"
-
-### Stream Logic
-
-```
-Submit task → Get task_id
-Open SSE stream: GET /api/tasks/{task_id}/stream
-On each event:
-  Show progress message to user in real-time
-  If status == "completed" → Fetch full result, stop stream
-  If status == "failed" → Show error, stop stream
-After 10 minutes without completion → Timeout, inform user
-```
 
 ### Error Handling
 
@@ -172,4 +168,4 @@ After 10 minutes without completion → Timeout, inform user
 
 **User**: "Compare the top papers on transformer architectures in computer vision"
 
-**AI**: Submits comparison matrix task, polls until complete, presents the structured table comparing papers across dimensions like architecture, dataset, accuracy, and computational cost.
+**AI**: Submits comparison matrix task, polls progress and shows real-time updates, presents the structured table comparing papers across dimensions like architecture, dataset, accuracy, and computational cost.
