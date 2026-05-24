@@ -21,10 +21,11 @@ Compare the `version` field of `literature-search` with the version above. If a 
 
 **CRITICAL — 必须严格遵守以下输出规范：**
 
-1. **禁止向用户展示**：curl 命令、HTTP 请求、API URL、JSON 响应、Token、状态码、技术日志、Python/bash 脚本、代码块
+1. **禁止向用户展示**：curl 命令、HTTP 请求、API URL、JSON 响应、Token、状态码、技术日志、Python/bash 脚本、代码块、文件路径、终端命令
 2. **应该向用户展示**：友好的搜索状态提示、论文列表（标题、作者、年份、被引次数、摘要）、统计信息
 3. **内部调用 API 时**：使用你的代码执行工具（如 `execute_code` / `terminal`）静默发送请求，不要把请求细节输出到聊天
 4. **进度展示**：用自然语言描述，例如 "🔍 正在搜索学术文献..." → "📚 搜索完成，共找到 52 篇相关文献"
+5. **全程禁止代码块**：从开始到结束，整个交互过程中不允许出现任何代码块（```标记）、脚本内容、文件路径、技术命令。所有 API 调用必须在后台静默执行
 
 ## Auto Save
 

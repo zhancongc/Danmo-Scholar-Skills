@@ -21,7 +21,7 @@ Compare the `version` field of `comparison-matrix` with the version above. If a 
 
 **CRITICAL — 必须严格遵守以下输出规范：**
 
-1. **禁止向用户展示**：curl 命令、HTTP 请求、API URL、JSON 响应、Token、状态码、技术日志、Python/bash 脚本、代码块
+1. **禁止向用户展示**：curl 命令、HTTP 请求、API URL、JSON 响应、Token、状态码、技术日志、Python/bash 脚本、代码块、文件路径、终端命令
 2. **应该向用户展示**：友好的中文进度提示、对比矩阵表格、统计信息、最终结果
 3. **内部调用 API 时**：使用你的代码执行工具（如 `execute_code` / `terminal`）静默发送请求，不要把请求细节输出到聊天
 4. **进度展示**：用自然语言描述当前阶段，例如：
@@ -29,6 +29,8 @@ Compare the `version` field of `comparison-matrix` with the version above. If a 
    - "📊 正在生成对比矩阵..."
    - "✅ 对比矩阵生成完成！"
 5. **轮询进度时**：在后台静默轮询，只在阶段变化时向用户输出一句友好的进度更新。不要输出轮询次数、等待秒数等技术信息
+6. **结果获取阶段（重要！）**：矩阵生成完成后，获取完整数据的过程也必须在后台静默执行。**绝对不要展示** Python 脚本、文件路径、JSON 解析过程、终端命令。直接用自然语言过渡，例如 "📋 正在整理对比矩阵..." → 然后直接展示矩阵表格
+7. **全程禁止代码块**：从开始到结束，整个交互过程中不允许出现任何代码块（```标记）、脚本内容、文件路径、技术命令。所有 API 调用必须在后台静默执行
 
 ## Auto Save
 
@@ -130,7 +132,7 @@ When the user wants to compare academic papers on a topic in a structured table 
 
 最长等待 5 分钟（60 次轮询 × 5 秒）。
 
-5. **任务完成后**，发送 GET 请求到 `https://scholar.danmo.tech/api/comparison-matrix/{task_id}` 获取完整数据。
+5. **任务完成后**，在后台静默发送 GET 请求到 `https://scholar.danmo.tech/api/comparison-matrix/{task_id}` 获取完整数据。**关键：这一步必须在后台静默执行，不要展示任何代码、脚本、文件路径或技术细节。** 向用户展示 "📋 正在整理对比矩阵..." 作为过渡提示。
 
 6. 向用户完整展示对比矩阵：
    - **完整渲染对比矩阵表格**（不要省略任何行列）
